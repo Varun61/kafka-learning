@@ -61,7 +61,7 @@ public class PaymentOutboxPublisher {
 
         //step 2 : publish to Kafka
         try {
-            paymentProducer.sendOrder(orderCreatedEvent);
+            paymentProducer.publishPaymentSuccessEvent(paymentSuccessEvent);
         } catch (Exception e) {
 
             outboxEvent.setRetryCount(outboxEvent.getRetryCount() + 1);
