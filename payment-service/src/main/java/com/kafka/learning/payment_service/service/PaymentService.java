@@ -50,6 +50,7 @@ public class PaymentService {
 
 
         PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent(
+                UUID.randomUUID(),
                 event.getOrderId(),
                 paymentId,
                 event.getItem()

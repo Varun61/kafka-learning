@@ -42,6 +42,7 @@ public class OrderService {
         orderRepository.save(order);
 
         OrderCreatedEvent event = new OrderCreatedEvent(
+                                        UUID.randomUUID(),
                                         request.getOrderId(),
                                         request.getItem(),
                                         request.getQuantity()
