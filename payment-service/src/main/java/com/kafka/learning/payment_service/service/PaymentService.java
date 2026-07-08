@@ -53,7 +53,8 @@ public class PaymentService {
                 UUID.randomUUID(),
                 event.getOrderId(),
                 paymentId,
-                event.getItem()
+                event.getItem(),
+                event.getQuantity()
         );
 
         String payload;

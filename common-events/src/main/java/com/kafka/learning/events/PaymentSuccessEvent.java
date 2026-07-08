@@ -14,4 +14,5 @@ public class PaymentSuccessEvent {
     private String orderId;
     private String paymentId;
     private String item;
+    private int quantity;
 }

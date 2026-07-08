@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Service
-@Primary // Tells spring to use only this interface implem
+//@Primary // Tells spring to use only this interface implem
 public class RedisIdempotencyService implements IdempotencyService {
 
     private static final Duration TTL = Duration.ofHours(24);

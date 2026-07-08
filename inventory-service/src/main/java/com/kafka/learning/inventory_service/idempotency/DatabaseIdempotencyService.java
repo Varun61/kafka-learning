@@ -2,12 +2,14 @@ package com.kafka.learning.inventory_service.idempotency;
 
 import com.kafka.learning.inventory_service.entity.ProcessedEvent;
 import com.kafka.learning.inventory_service.repository.ProcessedEventRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Primary // Tells spring to use only this interface implem
 public class DatabaseIdempotencyService implements IdempotencyService {
 
     private final ProcessedEventRepository processedEventRepository;
