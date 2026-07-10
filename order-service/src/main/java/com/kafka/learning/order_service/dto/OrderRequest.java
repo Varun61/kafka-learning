@@ -8,8 +8,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderRequest {
-
-    private String orderId;
     private String item;
     private int quantity;
 }

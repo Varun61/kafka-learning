@@ -32,8 +32,10 @@ public class OrderService {
     @Transactional
     public String createOrder(OrderRequest request) {
 
+        String orderId = UUID.randomUUID().toString();
+
         Order order = new Order(
-                request.getOrderId(),
+                orderId,
                 request.getItem(),
                 request.getQuantity(),
                 "CREATED"
@@ -43,7 +45,7 @@ public class OrderService {
 
         OrderCreatedEvent event = new OrderCreatedEvent(
                                         UUID.randomUUID(),
-                                        request.getOrderId(),
+                                        orderId,
                                         request.getItem(),
                                         request.getQuantity()
         );
