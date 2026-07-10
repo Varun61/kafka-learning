@@ -2,17 +2,23 @@ package com.kafka.learning.shipping_service.service;
 
 import com.kafka.learning.events.InventoryReservedEvent;
 import com.kafka.learning.events.ShippingCreatedEvent;
+import com.kafka.learning.shipping_service.entity.Shipment;
+import com.kafka.learning.shipping_service.entity.ShipmentStatus;
 import com.kafka.learning.shipping_service.kafka.producer.ShippingProducer;
+import com.kafka.learning.shipping_service.repository.ShipmentRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 public class ShippingService {
-    private final ShippingProducer shippingProducer;
+    //private final ShippingProducer shippingProducer;
 
-    public ShippingService(ShippingProducer shippingProducer) {
-        this.shippingProducer = shippingProducer;
+    private final ShipmentRepository shipmentRepository;
+
+    public ShippingService(ShipmentRepository shipmentRepository) {
+        this.shipmentRepository = shipmentRepository;
     }
 
     public void processShipping(InventoryReservedEvent event) {
@@ -22,13 +28,23 @@ public class ShippingService {
 
         String shipmentId = UUID.randomUUID().toString();
 
-        ShippingCreatedEvent shippingCreatedEvent = new ShippingCreatedEvent(
-                event.getOrderId(),
+        Shipment shipment = new Shipment(
                 shipmentId,
-                "SHIPPED"
+                event.getOrderId(),
+                event.getItem(),
+                ShipmentStatus.CREATED,
+                LocalDateTime.now()
         );
 
-        shippingProducer.publishShippingCreatedEvent(shippingCreatedEvent);
+        shipmentRepository.save(shipment);
+
+//        ShippingCreatedEvent shippingCreatedEvent = new ShippingCreatedEvent(
+//                event.getOrderId(),
+//                shipmentId,
+//                "SHIPPED"
+//        );
+
+        //shippingProducer.publishShippingCreatedEvent(shippingCreatedEvent);
 
         System.out.println("Shipment Created");
         System.out.println("--------------------------------");
