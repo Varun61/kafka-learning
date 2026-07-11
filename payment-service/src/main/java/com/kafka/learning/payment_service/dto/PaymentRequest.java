@@ -1,4 +1,4 @@
-package com.kafka.learning.payment_gateway.dto;
+package com.kafka.learning.payment_service.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

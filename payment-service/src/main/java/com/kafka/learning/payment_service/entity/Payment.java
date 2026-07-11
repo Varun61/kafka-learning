@@ -1,5 +1,7 @@
 package com.kafka.learning.payment_service.entity;
 
+import com.kafka.learning.payment_service.enums.PaymentStatus;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

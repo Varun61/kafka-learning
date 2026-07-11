@@ -1,6 +1,7 @@
-package com.kafka.learning.payment_gateway.dto;
+package com.kafka.learning.payment_service.dto;
 
-import com.kafka.learning.payment_gateway.enums.PaymentStatus;
+import com.kafka.learning.payment_service.enums.PaymentStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
