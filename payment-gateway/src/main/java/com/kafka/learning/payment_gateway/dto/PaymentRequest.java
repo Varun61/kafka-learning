@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PaymentRequest {
 
-    private String paymentId;
+    private String merchantReference; //OrderID
     private double amount;
     private String currency;
 }

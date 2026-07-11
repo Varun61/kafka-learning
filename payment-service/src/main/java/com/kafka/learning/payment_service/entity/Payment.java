@@ -17,6 +17,8 @@ public class Payment {
     @Id
     private String paymentId;
 
+    private String gateway_transactionId;
+
     private String orderId;
     private String item;
 

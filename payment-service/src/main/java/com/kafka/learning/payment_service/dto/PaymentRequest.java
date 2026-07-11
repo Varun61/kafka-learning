@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PaymentRequest {
 
-    private String paymentId;
+    private String marchantReference; //OrderID - so if gateway uses webhook, we can recognize the order the payment is for.
     private double amount;
     private String currency;
 }

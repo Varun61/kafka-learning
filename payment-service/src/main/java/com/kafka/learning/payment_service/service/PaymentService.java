@@ -54,8 +54,11 @@ public class PaymentService {
 
         if(response.getStatus() == PaymentStatus.SUCCESS) {
 
+                String paymentId = UUID.randomUUID().toString();
+
                 Payment payment = new Payment(
-                        request.getPaymentId(),
+                        paymentId,
+                        response.getTransactionId(),
                         event.getOrderId(),
                         event.getItem(),
                         response.getStatus()
@@ -67,7 +70,7 @@ public class PaymentService {
                 PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent(
                         UUID.randomUUID(),
                         event.getOrderId(),
-                        request.getPaymentId(),
+                        paymentId,
                         event.getItem(),
                         event.getQuantity()
                 );
