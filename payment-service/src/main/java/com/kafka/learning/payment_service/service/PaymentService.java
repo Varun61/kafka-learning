@@ -9,11 +9,11 @@ import com.kafka.learning.payment_service.dto.PaymentResponse;
 import com.kafka.learning.payment_service.entity.OutboxEvent;
 import com.kafka.learning.payment_service.entity.OutboxStatus;
 import com.kafka.learning.payment_service.entity.Payment;
-import com.kafka.learning.payment_service.enums.PaymentStatus;
 import com.kafka.learning.payment_service.repository.OutboxRepository;
 import com.kafka.learning.payment_service.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -36,6 +36,7 @@ public class PaymentService {
     }
 
     @Transactional
+    @CircuitBreaker(name = "paymentGateway", fallbackMethod = "paymentGatewayFallback")
     public void processPayment(OrderCreatedEvent event) {
 
         System.out.println("--------------------------------");
@@ -52,54 +53,88 @@ public class PaymentService {
         PaymentResponse response =
                 paymentGatewayClient.processPayment(request);
 
-        if(response.getStatus() == PaymentStatus.SUCCESS) {
+        switch(response.getStatus()) {
 
-                String paymentId = UUID.randomUUID().toString();
+            case SUCCESS -> handleSuccessfulPayment(event, response);
 
-                Payment payment = new Payment(
-                        paymentId,
-                        response.getTransactionId(),
-                        event.getOrderId(),
-                        event.getItem(),
-                        response.getStatus()
-                );
+            case FAILED -> handleFailedPayment(event, response);
 
-                paymentRepository.save(payment);
-
-
-                PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent(
-                        UUID.randomUUID(),
-                        event.getOrderId(),
-                        paymentId,
-                        event.getItem(),
-                        event.getQuantity()
-                );
-
-                String payload;
-                try {
-                    payload = objectMapper.writeValueAsString(paymentSuccessEvent);
-                } catch (Exception e) {
-                    throw new RuntimeException("Failed to serialize event", e);
-                }
-
-                OutboxEvent outboxEvent = new OutboxEvent(
-                        UUID.randomUUID(),
-                        "PaymentSuccessEvent",
-                        payload,
-                        OutboxStatus.PENDING,
-                        LocalDateTime.now(),
-                        0
-                );
-
-                outboxRepository.save(outboxEvent);
-
-                //paymentProducer.publishPaymentSuccessEvent(paymentSuccessEvent);
-
-                System.out.println("Payment Successful");
-                System.out.println("--------------------------------");
+            default -> throw new RuntimeException("Unknown payment status: " + response.getStatus());
         }
-        else {
-            throw new RuntimeException("Payment failed");
+    }
+
+    private void handleSuccessfulPayment(OrderCreatedEvent event, PaymentResponse response) {
+
+        Payment payment = savePayment(event, response);
+
+        PaymentSuccessEvent paymentSuccessEvent = new PaymentSuccessEvent(
+                UUID.randomUUID(),
+                event.getOrderId(),
+                payment.getPaymentId(),
+                event.getItem(),
+                event.getQuantity()
+        );
+
+        String payload = serialize(paymentSuccessEvent);
+
+        OutboxEvent outboxEvent = new OutboxEvent(
+                UUID.randomUUID(),
+                "PaymentSuccessEvent",
+                payload,
+                OutboxStatus.PENDING,
+                LocalDateTime.now(),
+                0
+        );
+
+        outboxRepository.save(outboxEvent);
+
+        System.out.println("Payment Successful");
+        System.out.println("--------------------------------");
+    }
+
+    private void handleFailedPayment(OrderCreatedEvent event, PaymentResponse response) {
+
+        savePayment(event, response);
+
+        System.out.println("--------------------------------");
+        System.out.println("Payment Failed");
+        System.out.println("Order Id : " + event.getOrderId());
+        System.out.println("--------------------------------");
+    }
+
+    private Payment savePayment(OrderCreatedEvent event, PaymentResponse response) {
+
+        Payment payment = new Payment(
+                UUID.randomUUID().toString(),
+                response.getTransactionId(),
+                event.getOrderId(),
+                event.getItem(),
+                response.getStatus()
+        );
+
+        return paymentRepository.save(payment);
+    }
+
+    private String serialize(Object object) {
+
+        try {
+            return objectMapper.writeValueAsString(object);
         }
+        catch (Exception e) {
+            throw new RuntimeException("Failed to serialize", e);
+        }
+    }
+
+    private void paymentGatewayFallback(
+            OrderCreatedEvent event,
+            Exception exception) {
+
+        System.out.println("--------------------------------");
+        System.out.println("Circuit Breaker Fallback");
+        System.out.println("Order Id : " + event.getOrderId());
+        System.out.println("Reason   : " + exception.getMessage());
+        System.out.println("--------------------------------");
+
+        throw new RuntimeException("Payment Gateway currently unavailable.");
     }
 }
