@@ -26,10 +26,8 @@ public class ShippingService {
         System.out.println("Creating Shipment...");
         System.out.println("Order Id : " + event.getOrderId());
 
-        String shipmentId = UUID.randomUUID().toString();
-
         Shipment shipment = new Shipment(
-                shipmentId,
+                UUID.randomUUID(),
                 event.getOrderId(),
                 event.getItem(),
                 ShipmentStatus.CREATED,

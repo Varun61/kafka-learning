@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kafka.learning.events.OrderCreatedEvent;
 import com.kafka.learning.order_service.entity.OutboxEvent;
-import com.kafka.learning.order_service.entity.OutboxStatus;
+import com.kafka.learning.order_service.enums.OutboxStatus;
 import com.kafka.learning.order_service.producer.OrderProducer;
 import com.kafka.learning.order_service.repository.OutboxRepository;
 import lombok.RequiredArgsConstructor;

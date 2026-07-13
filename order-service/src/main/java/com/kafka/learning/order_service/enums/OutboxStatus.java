@@ -1,4 +1,4 @@
-package com.kafka.learning.order_service.entity;
+package com.kafka.learning.order_service.enums;
 
 public enum OutboxStatus {
     PENDING,

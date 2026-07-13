@@ -1,12 +1,16 @@
 package com.kafka.learning.order_service.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kafka.learning.events.PaymentFailedEvent;
+import com.kafka.learning.events.PaymentSuccessEvent;
 import com.kafka.learning.order_service.dto.OrderRequest;
 import com.kafka.learning.order_service.entity.Order;
+import com.kafka.learning.order_service.enums.OrderStatus;
 import com.kafka.learning.order_service.entity.OutboxEvent;
-import com.kafka.learning.order_service.entity.OutboxStatus;
+import com.kafka.learning.order_service.enums.OutboxStatus;
 import com.kafka.learning.order_service.repository.OrderRepository;
 import com.kafka.learning.order_service.repository.OutboxRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import com.kafka.learning.events.OrderCreatedEvent;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -32,13 +37,13 @@ public class OrderService {
     @Transactional
     public String createOrder(OrderRequest request) {
 
-        String orderId = UUID.randomUUID().toString();
+        UUID orderId = UUID.randomUUID();
 
         Order order = new Order(
                 orderId,
                 request.getItem(),
                 request.getQuantity(),
-                "CREATED"
+                OrderStatus.PAYMENT_PENDING
         );
 
         orderRepository.save(order);
@@ -70,4 +75,38 @@ public class OrderService {
 
         return "Order Accepted";
     }
+
+    @Transactional
+    public void handlePaymentSuccessEvent(PaymentSuccessEvent paymentSuccessEvent) {
+
+        Order order = orderRepository.findById(paymentSuccessEvent.getOrderId())
+                .orElseThrow(() ->
+                        new RuntimeException("Order not found: " + paymentSuccessEvent.getOrderId()));
+
+        order.setStatus(OrderStatus.PAYMENT_COMPLETED);
+        orderRepository.save(order);
+
+        log.info("--------------------------------");
+        log.info("Payment completed");
+        log.info("Order Id : {} " , order.getOrderId());
+        log.info("--------------------------------");
+
+    }
+
+    public void handlePaymentFailedEvent(PaymentFailedEvent paymentFailedEvent) {
+
+        Order order = orderRepository.findById(paymentFailedEvent.getOrderId())
+                .orElseThrow(() ->
+                        new RuntimeException("Order not found: " + paymentFailedEvent.getOrderId()));
+
+        order.setStatus(OrderStatus.PAYMENT_FAILED);
+
+        orderRepository.save(order);
+
+        log.info("--------------------------------");
+        log.info("Payment failed");
+        log.info("Order Id : {}" , order.getOrderId());
+        log.info("--------------------------------");
+    }
+
 }

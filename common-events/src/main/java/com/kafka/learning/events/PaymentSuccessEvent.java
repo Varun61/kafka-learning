@@ -10,9 +10,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentSuccessEvent {
-    private UUID eventID;
-    private String orderId;
-    private String paymentId;
+    private UUID eventId;
+    private UUID orderId;
+    private UUID paymentId;
     private String item;
     private int quantity;
 }

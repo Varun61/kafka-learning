@@ -2,6 +2,7 @@ package com.kafka.learning.payment_service.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kafka.learning.events.OrderCreatedEvent;
+import com.kafka.learning.events.PaymentFailedEvent;
 import com.kafka.learning.events.PaymentSuccessEvent;
 import com.kafka.learning.payment_service.client.PaymentGatewayClient;
 import com.kafka.learning.payment_service.dto.PaymentRequest;
@@ -94,7 +95,33 @@ public class PaymentService {
 
     private void handleFailedPayment(OrderCreatedEvent event, PaymentResponse response) {
 
-        savePayment(event, response);
+        Payment payment = savePayment(event, response);
+
+        PaymentFailedEvent paymentFailedEvent = new PaymentFailedEvent(
+                UUID.randomUUID(),
+                event.getOrderId(),
+                payment.getPaymentId(),
+                "Payment Failed"
+        );
+
+        String payload;
+
+        try {
+            payload = objectMapper.writeValueAsString(paymentFailedEvent);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize event", e);
+        }
+
+        OutboxEvent outboxEvent = new OutboxEvent(
+                UUID.randomUUID(),
+                "PaymentFailedEvent",
+                payload,
+                OutboxStatus.PENDING,
+                LocalDateTime.now(),
+                0
+        );
+
+        outboxRepository.save(outboxEvent);
 
         System.out.println("--------------------------------");
         System.out.println("Payment Failed");
@@ -105,7 +132,7 @@ public class PaymentService {
     private Payment savePayment(OrderCreatedEvent event, PaymentResponse response) {
 
         Payment payment = new Payment(
-                UUID.randomUUID().toString(),
+                UUID.randomUUID(),
                 response.getTransactionId(),
                 event.getOrderId(),
                 event.getItem(),

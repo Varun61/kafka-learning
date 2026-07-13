@@ -7,10 +7,12 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class InventoryReservedEvent {
+@NoArgsConstructor
+public class PaymentFailedEvent {
+
+    private UUID eventId;
     private UUID orderId;
-    private UUID inventoryId;
-    private String item;
+    private UUID paymentId;
+    private String reason;
 }

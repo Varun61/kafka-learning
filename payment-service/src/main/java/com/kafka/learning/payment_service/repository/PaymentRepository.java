@@ -3,5 +3,7 @@ package com.kafka.learning.payment_service.repository;
 import com.kafka.learning.payment_service.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+import java.util.UUID;
+
+public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 }

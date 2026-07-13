@@ -1,7 +1,7 @@
 package com.kafka.learning.order_service.repository;
 
 import com.kafka.learning.order_service.entity.OutboxEvent;
-import com.kafka.learning.order_service.entity.OutboxStatus;
+import com.kafka.learning.order_service.enums.OutboxStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

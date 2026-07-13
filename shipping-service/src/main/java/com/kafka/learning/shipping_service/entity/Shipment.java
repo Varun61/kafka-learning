@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "shipments")
@@ -15,9 +16,9 @@ import java.time.LocalDateTime;
 public class Shipment {
 
     @Id
-    private String shipmentId;
+    private UUID shipmentId;
 
-    private String orderId;
+    private UUID orderId;
 
     private String item;
 

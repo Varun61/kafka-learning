@@ -9,7 +9,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class OrderCreatedEvent {
     private UUID eventId;
-    private String orderId;
+    private UUID orderId;
     private String item;
     private int quantity;
 }

@@ -3,6 +3,7 @@ package com.kafka.learning.payment_service.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kafka.learning.events.OrderCreatedEvent;
+import com.kafka.learning.events.PaymentFailedEvent;
 import com.kafka.learning.events.PaymentSuccessEvent;
 import com.kafka.learning.payment_service.entity.OutboxEvent;
 import com.kafka.learning.payment_service.entity.OutboxStatus;
@@ -42,14 +43,23 @@ public class PaymentOutboxPublisher {
 
     private void processEvent(OutboxEvent outboxEvent) {
 
-        PaymentSuccessEvent paymentSuccessEvent;
+        Object event;
 
         //step 1: deserialize
         try {
-            paymentSuccessEvent = objectMapper.readValue(
-                    outboxEvent.getPayload(),
-                    PaymentSuccessEvent.class
-            );
+            switch (outboxEvent.getEventType()) {
+                case "PaymentSuccessEvent" ->
+                        event = objectMapper.readValue(
+                                outboxEvent.getPayload(),
+                                PaymentSuccessEvent.class);
+                case "PaymentFailedEvent" ->
+                        event = objectMapper.readValue(
+                                outboxEvent.getPayload(),
+                                PaymentFailedEvent.class);
+                default ->
+                        throw new IllegalArgumentException(
+                                "Unknown event type: " + outboxEvent.getEventType());
+            }
         } catch (JsonProcessingException e) {
             log.error("Failed to deserialize outbox event {}", outboxEvent.getId(), e);
 
@@ -61,7 +71,11 @@ public class PaymentOutboxPublisher {
 
         //step 2 : publish to Kafka
         try {
-            paymentProducer.publishPaymentSuccessEvent(paymentSuccessEvent);
+            if(event instanceof PaymentSuccessEvent successEvent) {
+                paymentProducer.publishPaymentSuccessEvent(successEvent);
+            } else if(event instanceof PaymentFailedEvent failedEvent) {
+                paymentProducer.publishPaymentFailedEvent(failedEvent);
+            }
         } catch (Exception e) {
 
             outboxEvent.setRetryCount(outboxEvent.getRetryCount() + 1);

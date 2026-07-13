@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name="payments")
 @Data
@@ -15,11 +17,11 @@ import lombok.NoArgsConstructor;
 public class Payment {
 
     @Id
-    private String paymentId;
+    private UUID paymentId;
 
     private String gateway_transactionId;
 
-    private String orderId;
+    private UUID orderId;
     private String item;
 
     @Enumerated(EnumType.STRING)

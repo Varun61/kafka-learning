@@ -40,8 +40,8 @@ public class InventoryService {
     @Transactional
     public void processInventory(PaymentSuccessEvent event) {
 
-        if(idempotencyService.isDuplicate(event.getEventID())) {
-            log.warn("Duplicate event detected. Ignoring Event ID: {}", event.getEventID());
+        if(idempotencyService.isDuplicate(event.getEventId())) {
+            log.warn("Duplicate event detected. Ignoring Event ID: {}", event.getEventId());
             return;
         }
 
@@ -67,7 +67,7 @@ public class InventoryService {
         InventoryReservedEvent inventoryReservedEvent =
                 new InventoryReservedEvent(
                         event.getOrderId(),
-                        UUID.randomUUID().toString(),
+                        UUID.randomUUID(),
                         event.getItem()
                 );
         String payload;
@@ -89,6 +89,6 @@ public class InventoryService {
 
         inventoryOutboxRepository.save(inventoryOutboxEvent);
 
-        idempotencyService.markProcessed(event.getEventID());
+        idempotencyService.markProcessed(event.getEventId());
     }
 }

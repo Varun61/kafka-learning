@@ -1,5 +1,6 @@
 package com.kafka.learning.order_service.entity;
 
+import com.kafka.learning.order_service.enums.OutboxStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

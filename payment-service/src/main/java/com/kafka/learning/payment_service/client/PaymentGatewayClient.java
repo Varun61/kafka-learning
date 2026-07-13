@@ -13,7 +13,7 @@ public class PaymentGatewayClient {
 
     private final RestClient restClient;
 
-    @Retry(name = "paymentGateway")
+    @Retry(name = "paymentGateway") // retries when method receives exception
     public PaymentResponse processPayment(PaymentRequest request) {
 
         return restClient.post()
