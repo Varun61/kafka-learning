@@ -18,7 +18,7 @@ public class KafkaConsumerConfig {
                         kafkaTemplate,
                         (record, exception) ->
                                 new TopicPartition(
-                                        "payments-dlt",
+                                        record.topic() + "-dlt",
                                         record.partition()
                                 )
                 );
