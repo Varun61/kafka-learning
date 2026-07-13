@@ -2,6 +2,7 @@ package com.kafka.learning.payment_service.client;
 
 import com.kafka.learning.payment_service.dto.PaymentRequest;
 import com.kafka.learning.payment_service.dto.PaymentResponse;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -12,6 +13,7 @@ public class PaymentGatewayClient {
 
     private final RestClient restClient;
 
+    @Retry(name = "paymentGateway")
     public PaymentResponse processPayment(PaymentRequest request) {
 
         return restClient.post()
