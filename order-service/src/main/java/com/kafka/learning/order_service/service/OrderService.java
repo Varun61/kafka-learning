@@ -83,6 +83,12 @@ public class OrderService {
                 .orElseThrow(() ->
                         new RuntimeException("Order not found: " + paymentSuccessEvent.getOrderId()));
 
+        //make idempotent to save order with already updated status
+        if(order.getStatus() != OrderStatus.PAYMENT_PENDING) {
+            log.info("Order {} already completed. Ignoring duplicate event.", order.getOrderId());
+            return;
+        }
+
         order.setStatus(OrderStatus.PAYMENT_COMPLETED);
         orderRepository.save(order);
 
@@ -98,6 +104,12 @@ public class OrderService {
         Order order = orderRepository.findById(paymentFailedEvent.getOrderId())
                 .orElseThrow(() ->
                         new RuntimeException("Order not found: " + paymentFailedEvent.getOrderId()));
+
+        //make idempotent to save order with already updated status
+        if(order.getStatus() != OrderStatus.PAYMENT_PENDING) {
+            log.info("Order {} already completed. Ignoring duplicate event.", order.getOrderId());
+            return;
+        }
 
         order.setStatus(OrderStatus.PAYMENT_FAILED);
 
