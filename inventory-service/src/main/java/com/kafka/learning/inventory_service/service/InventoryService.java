@@ -7,7 +7,6 @@ import com.kafka.learning.inventory_service.entity.Inventory;
 import com.kafka.learning.inventory_service.entity.InventoryOutboxEvent;
 import com.kafka.learning.inventory_service.entity.InventoryOutboxStatus;
 import com.kafka.learning.inventory_service.idempotency.IdempotencyService;
-import com.kafka.learning.inventory_service.kafka.producer.InventoryProducer;
 import com.kafka.learning.inventory_service.repository.InventoryOutboxRepository;
 import com.kafka.learning.inventory_service.repository.InventoryRepository;
 import org.slf4j.Logger;
@@ -48,8 +47,15 @@ public class InventoryService {
         log.info("--------------------------------------------------");
         log.info("Processing inventory for Order ID: {}", event.getOrderId());
 
-        Inventory inventory = inventoryRepository.findById(event.getItem()).orElseThrow(() ->
-                new RuntimeException("Item not found: " + event.getItem()));
+        //Inventory inventory = inventoryRepository.findById(event.getItem()).orElseThrow(() ->
+        //        new RuntimeException("Item not found: " + event.getItem()));
+
+
+        // pessimistic locking - used when high contention
+        Inventory inventory = inventoryRepository
+                .findByItemForUpdate(event.getItem())
+                .orElseThrow(() ->
+                        new RuntimeException("Item not found: " + event.getItem()));
 
         log.info("Read quantity = {}", inventory.getAvailableQuantity());
 
