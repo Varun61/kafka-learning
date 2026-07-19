@@ -27,21 +27,21 @@ public class DLQConsumer {
         this.objectMapper = objectMapper;
     }
 
-    @KafkaListener(topics = "payments-dlt", groupId = "inventory-dlt-group")
+    @KafkaListener(topics = "payment-success-dlt", groupId = "inventory-dlt-group")
     public void consume(PaymentSuccessEvent event) throws JsonProcessingException {
 
-        log.error("==================================================");
-        log.error("Received message from DLQ");
-        log.error("Order ID : {}", event.getOrderId());
-        log.error("Event ID : {}", event.getEventID());
-        log.error("==================================================");
+        log.info("==================================================");
+        log.info("Received message from DLQ");
+        log.info("Order ID : {}", event.getOrderId());
+        log.info("Event ID : {}", event.getEventId());
+        log.info("==================================================");
 
         String payload = objectMapper.writeValueAsString(event);
 
         FailedMessage failedMessage =
                 new FailedMessage(
                         UUID.randomUUID(),
-                        event.getEventID(),
+                        event.getEventId(),
                         payload,
                         "Not enough stock",
                         LocalDateTime.now(),

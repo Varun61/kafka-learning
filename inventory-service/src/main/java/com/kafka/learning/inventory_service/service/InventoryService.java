@@ -51,13 +51,29 @@ public class InventoryService {
         Inventory inventory = inventoryRepository.findById(event.getItem()).orElseThrow(() ->
                 new RuntimeException("Item not found: " + event.getItem()));
 
+        log.info("Read quantity = {}", inventory.getAvailableQuantity());
+
+        // Adding sleep to replicate race conditions.
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         if(inventory.getAvailableQuantity() < event.getQuantity() ) {
             throw new RuntimeException("Not enough stock for item: " + event.getItem());
         }
 
         inventory.setAvailableQuantity(inventory.getAvailableQuantity() - event.getQuantity());
 
-        inventoryRepository.save(inventory);
+        try {
+            inventoryRepository.save(inventory);
+            inventoryRepository.flush(); // commits the db transaction but usually all transactions are commited at end.
+            // this is the example of optimistic locking, verifies data as changed using version at time of commiting.
+        } catch (Exception e) {
+            log.error("Flush failed", e);
+            throw e;
+        }
 
         log.info("Inventory reserved successfully.");
         log.info("Item               : {}", inventory.getItem());
