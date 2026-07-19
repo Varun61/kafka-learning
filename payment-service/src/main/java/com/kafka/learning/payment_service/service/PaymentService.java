@@ -12,6 +12,7 @@ import com.kafka.learning.payment_service.entity.OutboxStatus;
 import com.kafka.learning.payment_service.entity.Payment;
 import com.kafka.learning.payment_service.repository.OutboxRepository;
 import com.kafka.learning.payment_service.repository.PaymentRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OutboxRepository outboxRepository;
@@ -40,9 +42,9 @@ public class PaymentService {
     @CircuitBreaker(name = "paymentGateway", fallbackMethod = "paymentGatewayFallback")
     public void processPayment(OrderCreatedEvent event) {
 
-        System.out.println("--------------------------------");
-        System.out.println("Processing payment...");
-        System.out.println("Order Id : " + event.getOrderId());
+        log.info("--------------------------------");
+        log.info("Processing payment...");
+        log.info("Order Id : {} " , event.getOrderId());
 
 
         PaymentRequest request = new PaymentRequest(
@@ -89,8 +91,8 @@ public class PaymentService {
 
         outboxRepository.save(outboxEvent);
 
-        System.out.println("Payment Successful");
-        System.out.println("--------------------------------");
+        log.info("Payment Successful");
+        log.info("--------------------------------");
     }
 
     private void handleFailedPayment(OrderCreatedEvent event, PaymentResponse response) {
@@ -123,10 +125,10 @@ public class PaymentService {
 
         outboxRepository.save(outboxEvent);
 
-        System.out.println("--------------------------------");
-        System.out.println("Payment Failed");
-        System.out.println("Order Id : " + event.getOrderId());
-        System.out.println("--------------------------------");
+        log.error("--------------------------------");
+        log.error("Payment Failed");
+        log.error("Order Id : " + event.getOrderId());
+        log.error("--------------------------------");
     }
 
     private Payment savePayment(OrderCreatedEvent event, PaymentResponse response) {
@@ -156,11 +158,11 @@ public class PaymentService {
             OrderCreatedEvent event,
             Exception exception) {
 
-        System.out.println("--------------------------------");
-        System.out.println("Circuit Breaker Fallback");
-        System.out.println("Order Id : " + event.getOrderId());
-        System.out.println("Reason   : " + exception.getMessage());
-        System.out.println("--------------------------------");
+        log.warn("--------------------------------");
+        log.warn("Circuit Breaker Fallback");
+        log.warn("Order Id : " + event.getOrderId());
+        log.warn("Reason   : " + exception.getMessage());
+        log.warn("--------------------------------");
 
         throw new RuntimeException("Payment Gateway currently unavailable.");
     }

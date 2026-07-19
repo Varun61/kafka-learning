@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class PaymentProducer {
 
@@ -22,7 +24,16 @@ public class PaymentProducer {
     }
 
     public void publishPaymentSuccessEvent(PaymentSuccessEvent event) throws Exception{
-        kafkaTemplate.send(PAYMENT_SUCCESS_TOPIC, event).get();
+
+//        kafkaTemplate.send(PAYMENT_SUCCESS_TOPIC, event).get();
+//        log.info("PaymentSuccessEvent {} published to Kafka TOPIC {}", event.getPaymentId(), PAYMENT_SUCCESS_TOPIC);
+
+        // Providing a key disables sticky partitioning.
+        // Kafka selects the partition by hashing the key.
+        //
+        // Using a random key distributes different messages across different partitions,
+        // increasing the chance that multiple consumer instances can process them in parallel.
+        kafkaTemplate.send(PAYMENT_SUCCESS_TOPIC, UUID.randomUUID().toString(), event).get();
         log.info("PaymentSuccessEvent {} published to Kafka TOPIC {}", event.getPaymentId(), PAYMENT_SUCCESS_TOPIC);
     }
 
