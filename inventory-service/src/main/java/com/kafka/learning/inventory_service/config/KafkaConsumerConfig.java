@@ -1,5 +1,6 @@
 package com.kafka.learning.inventory_service.config;
 
+import com.kafka.learning.inventory_service.exception.NotEnoughStockException;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,14 @@ public class KafkaConsumerConfig {
 
         FixedBackOff fixedBackOff = new FixedBackOff(1000L,3); //1000L == 1000ms // 3 retries after initial attempt
 
-        return new DefaultErrorHandler(recoverer, fixedBackOff); // once retries are exhausted, calls recoverer
+        DefaultErrorHandler handler =
+                new DefaultErrorHandler(recoverer, fixedBackOff); // once retries are exhausted, calls recoverer
+
+        // Immediately send message to DLQ if it's a not enough stock exception
+        handler.addNotRetryableExceptions(
+                NotEnoughStockException.class
+        );
+
+        return handler;
     }
 }

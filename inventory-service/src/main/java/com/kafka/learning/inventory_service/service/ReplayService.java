@@ -37,7 +37,7 @@ public class ReplayService {
                                 PaymentSuccessEvent.class
                         );
 
-                kafkaTemplate.send("payments", event).get();
+                kafkaTemplate.send("payment-success", event).get();
 
                 failedMessage.setStatus(FailedStatus.REPLAYED);
 
